@@ -13,6 +13,11 @@ with open(css_file) as f:
 
 pdf_file_name=""
 
+import os
+from dotenv import load_dotenv
+load_dotenv()
+HUGGINGFACEHUB_API_TOKEN = os.getenv("HUGGINGFACEHUB_API_TOKEN")
+
 with st.sidebar:
     file_name_choice = st.selectbox("Select the part of MPEP to AI Chat", ("mpep-0000-table-of-contents","mpep-0005-change-summary","mpep-0010-title-page","mpep-0015-foreword","mpep-0020-introduction","mpep-0100","mpep-0200","mpep-0300","mpep-0400","mpep-0500","mpep-0600","mpep-0700","mpep-0800","mpep-0900","mpep-1000","mpep-1100","mpep-1200","mpep-1300","mpep-1400","mpep-1500","mpep-1600","mpep-1700","mpep-1800","mpep-1900","mpep-2000","mpep-2100","mpep-2200","mpep-2300","mpep-2400","mpep-2500","mpep-2600","mpep-2700","mpep-2800","mpep-2900","mpep-9005-appx-i","mpep-9010-appx-ii","mpep-9015-appx-l","mpep-9020-appx-r","mpep-9025-appx-t","mpep-9030-appx-ai","mpep-9035-appx-p","mpep-9090-subject-matter-index","mpep-9095-Form-Paragraph-Chapter"))
     if file_name_choice == "mpep-0000-table-of-contents":
@@ -108,12 +113,18 @@ with st.sidebar:
 def call_chatbot_api(pdf_file_name, user_question):
     #url = 'https://binqiangliu-fastapi-in-docker.hf.space/api/chat'
     #url = 'https://binqiangliu-officialusinositechatv1api.hf.space/api/chat'
-    url = 'https://binqiangliu-aichatmpep-fastapi.hf.space/query'
+    url = 'https://binqiangliu-aichatmpep-fastapi.hf.space/query'   #2023.11.19将FastAPI所在的Huggingface Space设置为Private，为此并添加了HUGGINGFACEHUB_API_TOKEN
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {HUGGINGFACEHUB_API_TOKEN}"
+        #保险起见，建议始终采用f''的形式以及配合使用{}
+    }
     json_data_for_api = {
         'pdf_file_name': pdf_file_name,
         'user_question': user_question
     }
-    response = requests.post(url, json=json_data_for_api) 
+    #response = requests.post(url, json=json_data_for_api) 
+    response = requests.post(url, headers=headers, json=json_data_for_api) 
     result = response.json()
     return result['response']
 
